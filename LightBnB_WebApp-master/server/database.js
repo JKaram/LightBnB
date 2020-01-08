@@ -64,7 +64,6 @@ exports.getUserWithId = getUserWithId;
  * @return {Promise<{}>} A promise to the user.
  */
 const addUser =  function(user) {
-  console.log('USER', user)
   return pool.query(`
   INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *;
   `, [user.name, user.email, user.password])
@@ -83,9 +82,18 @@ exports.addUser = addUser;
  * @return {Promise<[{}]>} A promise to the reservations.
  */
 const getAllReservations = function(guest_id, limit = 10) {
-  return getAllProperties(null, 2);
+  return pool.query(`
+  SELECT properties.*  FROM reservations 
+  JOIN property_reviews ON reservations.id = property_reviews.reservation_id
+  JOIN properties ON properties.id = property_reviews.property_id
+  WHERE reservations.guest_id = $1
+  LIMIT $2;
+  `, [guest_id, limit])
+  .then(res => res.rows)
 }
 exports.getAllReservations = getAllReservations;
+
+// Lloyd Jefferson      | asherpoole@gmx.com    
 
 /// Properties
 
